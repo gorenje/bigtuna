@@ -1,10 +1,13 @@
 class ProjectsController < ApplicationController
   before_filter :locate_project, :only => [:show, :build, :edit, :update, :remove, :destroy, :arrange, :feed]
   respond_to :js, :only => [:index, :show]
-  
-  
+
   def index
     @projects = Project.order("position ASC")
+    respond_to do |format|
+      format.cctray { render :action => 'index_cctray', :layout => false }
+      format.all { render }
+    end
   end
 
   def show
