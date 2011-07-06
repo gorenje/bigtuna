@@ -1,3 +1,4 @@
+# -*- ruby -*-
 source 'http://rubygems.org'
 
 gem "rails", "3.0.3"
@@ -20,6 +21,13 @@ gem "notifo"
 
 # campfire notifications
 gem "tinder"
+
+# deployment
+gem 'capistrano'
+gem 'capistrano-ext'
+gem 'gccommon', :git => 'git@dev.foxga.me:gccommon.git'
+gem 'rake', "0.8.7"
+gem 'whenever', :git => "https://github.com/javan/whenever.git"
 
 group :development, :test do
   gem "capybara"

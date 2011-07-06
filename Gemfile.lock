@@ -1,3 +1,20 @@
+GIT
+  remote: git@dev.foxga.me:gccommon.git
+  revision: f3e2fdf7c35eb3da0c46dd2bce845fa74415fe3f
+  specs:
+    gccommon (0.0.7)
+      gccommon
+      json
+      rest-client
+
+GIT
+  remote: https://github.com/javan/whenever.git
+  revision: 660fbc50e3b7f16a45548c88c97a47512451d482
+  specs:
+    whenever (0.6.8)
+      activesupport (>= 2.3.4)
+      chronic (>= 0.4.3)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -32,6 +49,14 @@ GEM
     archive-tar-minitar (0.5.2)
     arel (2.0.4)
     builder (2.1.2)
+    capistrano (2.6.0)
+      highline
+      net-scp (>= 1.0.0)
+      net-sftp (>= 2.0.0)
+      net-ssh (>= 2.0.14)
+      net-ssh-gateway (>= 1.1.0)
+    capistrano-ext (1.2.1)
+      capistrano (>= 1.0.0)
     capybara (0.4.0)
       celerity (>= 0.7.9)
       culerity (>= 0.2.4)
@@ -42,6 +67,7 @@ GEM
       selenium-webdriver (>= 0.0.27)
       xpath (~> 0.1.2)
     celerity (0.8.5)
+    chronic (0.5.0)
     columnize (0.3.2)
     configuration (1.2.0)
     crack (0.1.8)
@@ -60,6 +86,7 @@ GEM
       multipart-post (~> 1.0.1)
       rack (< 2, >= 1.1.0)
     haml (3.0.24)
+    highline (1.6.2)
     httparty (0.4.5)
       crack (>= 0.1.1)
     i18n (0.4.2)
@@ -83,6 +110,13 @@ GEM
     mocha (0.9.10)
       rake
     multipart-post (1.0.1)
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
+    net-sftp (2.0.5)
+      net-ssh (>= 2.0.9)
+    net-ssh (2.1.4)
+    net-ssh-gateway (1.1.0)
+      net-ssh (>= 1.99.1)
     nokogiri (1.4.4)
     notifo (0.1.0)
       httparty (~> 0.4.5)
@@ -107,6 +141,8 @@ GEM
       rake (>= 0.8.7)
       thor (~> 0.14.4)
     rake (0.8.7)
+    rest-client (1.6.3)
+      mime-types (>= 1.16)
     roauth (0.0.3)
     ruby-debug (0.10.4)
       columnize (>= 0.1)
@@ -155,11 +191,14 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  capistrano
+  capistrano-ext
   capybara
   crack
   database_cleaner
   delayed_job
   faker
+  gccommon!
   haml
   jquery-rails
   json
@@ -170,6 +209,7 @@ DEPENDENCIES
   notifo
   open4
   rails (= 3.0.3)
+  rake (= 0.8.7)
   ruby-debug
   ruby-debug19
   scashin133-xmpp4r-simple (= 0.8.9)
@@ -178,3 +218,4 @@ DEPENDENCIES
   stringex
   tinder
   webmock
+  whenever!
