@@ -1,0 +1,98 @@
+<%
+#
+# Unicorn configuration
+#
+%>
+<% if using_unicorn %>
+upstream <%= user %>-unicorn {
+    server unix:<%= shrdir %>/pids/unicorn.sock;
+}
+
+server {
+    listen <%= unicorn_port %> default deferred;
+
+    client_max_body_size 4G;
+    set_real_ip_from 0.0.0.0/0;
+
+  <% if has_htpasswd %>
+    auth_basic            "Restricted - <%= appname %>";
+    auth_basic_user_file  <%= appdir %>/config/htpasswd;
+  <% end %>
+
+    root <%= appdir %>/public;
+    try_files $uri/index.html $uri.html $uri @app;
+
+    location @app {
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+        proxy_redirect off;
+        proxy_pass http://<%= user %>-unicorn;
+    }
+
+    error_page 500 502 503 504 /500.html;
+    location = /500.html {
+        root <%= appdir %>/public;
+    }
+}
+<% end %>
+
+<%
+#
+# Thin configuration
+#
+%>
+<% if using_thin %>
+upstream thin_cluster_<%= appname %> {
+  <% (0...thin_sockets).each do |num| %>
+  server unix:/tmp/thin.<%= appname %>.<%= num %>.sock;
+  <% end %>
+}
+
+<% ports.each do |port| %>
+
+server {
+  listen <%= port %>;
+  server_name <%= server_names.join(' ') %>;
+  root <%= appdir %>/public;
+  <% if port == "443" %>
+  ssl on;
+  ssl_certificate      /etc/ssl/nginx/nginx.crt;
+  ssl_certificate_key  /etc/ssl/nginx/nginx.key;
+  <% end %>
+
+  error_page 500 502 503 504 /50x.html;
+  location = /50x.html {
+    root <%= appdir %>/public;
+  }
+
+  location / {
+
+  <% if has_htpasswd %>
+    auth_basic            "Restricted - <%= appname %>";
+    auth_basic_user_file  <%= appdir %>/config/htpasswd;
+  <% end %>
+
+    proxy_set_header  X-Real-IP  $remote_addr;
+    proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+    <% if port == "443" %>
+    proxy_set_header X-Forwarded-Proto "https";
+    <% end %>
+    proxy_set_header Host $http_host;
+    proxy_redirect off;
+
+    if (-f $request_filename/index.html) {
+      rewrite (.*) $1/index.html break;
+    }
+    if (-f $request_filename.html) {
+      rewrite (.*) $1.html break;
+    }
+    if (!-f $request_filename) {
+      proxy_pass http://thin_cluster_<%= appname %>;
+      break;
+    }
+  }
+}
+<% end %>
+<% end %>
