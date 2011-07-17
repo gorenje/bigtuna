@@ -1,11 +1,19 @@
 GIT
   remote: git@dev.foxga.me:gccommon.git
-  revision: f3e2fdf7c35eb3da0c46dd2bce845fa74415fe3f
+  revision: 1348476658ab6413c85bfdcc1f064a4ca286b2b3
   specs:
-    gccommon (0.0.7)
+    gccommon (0.1.3)
+      daemon-spawn
+      delayed_job
       gccommon
       json
       rest-client
+
+GIT
+  remote: https://github.com/alexvollmer/daemon-spawn.git
+  revision: ee4147660afdcf279519fa88cd97d432d8609af6
+  specs:
+    daemon-spawn (0.4.2)
 
 GIT
   remote: https://github.com/javan/whenever.git
@@ -72,9 +80,9 @@ GEM
     configuration (1.2.0)
     crack (0.1.8)
     culerity (0.2.12)
-    daemons (1.1.0)
+    daemons (1.1.4)
     database_cleaner (0.6.0)
-    delayed_job (2.1.1)
+    delayed_job (2.1.4)
       activesupport (~> 3.0)
       daemons
     erubis (2.6.6)
@@ -93,7 +101,8 @@ GEM
     jquery-rails (0.2.6)
       rails (~> 3.0)
       thor (~> 0.14.4)
-    json (1.4.6)
+    json (1.5.3)
+    kgio (2.5.0)
     launchy (0.3.7)
       configuration (>= 0.0.5)
       rake (>= 0.8.1)
@@ -110,6 +119,7 @@ GEM
     mocha (0.9.10)
       rake
     multipart-post (1.0.1)
+    mysql2 (0.2.11)
     net-scp (1.0.4)
       net-ssh (>= 1.99.1)
     net-sftp (2.0.5)
@@ -140,6 +150,7 @@ GEM
       activesupport (= 3.0.3)
       rake (>= 0.8.7)
       thor (~> 0.14.4)
+    raindrops (0.7.0)
     rake (0.8.7)
     rest-client (1.6.3)
       mime-types (>= 1.16)
@@ -166,6 +177,10 @@ GEM
       addressable
     sqlite3-ruby (1.3.1)
     stringex (1.2.0)
+    thin (1.2.11)
+      daemons (>= 1.0.9)
+      eventmachine (>= 0.12.6)
+      rack (>= 1.0.0)
     thor (0.14.6)
     tinder (1.4.3)
       activesupport
@@ -180,6 +195,10 @@ GEM
       eventmachine (>= 0.12.8)
       roauth (>= 0.0.2)
     tzinfo (0.3.23)
+    unicorn (4.0.1)
+      kgio (~> 2.4)
+      rack
+      raindrops (~> 0.6)
     webmock (1.6.2)
       addressable (>= 2.2.2)
       crack (>= 0.1.7)
@@ -195,8 +214,11 @@ DEPENDENCIES
   capistrano-ext
   capybara
   crack
+  daemon-spawn!
+  daemons
   database_cleaner
   delayed_job
+  eventmachine
   faker
   gccommon!
   haml
@@ -205,6 +227,7 @@ DEPENDENCIES
   launchy
   machinist
   mocha
+  mysql2 (< 0.3)
   nokogiri
   notifo
   open4
@@ -216,6 +239,8 @@ DEPENDENCIES
   shout-bot
   sqlite3-ruby
   stringex
+  thin
   tinder
+  unicorn
   webmock
   whenever!

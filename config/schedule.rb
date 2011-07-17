@@ -23,15 +23,7 @@ case forserver
 ## production und staging servers
 ##
 when "ci.spawn.vc"
-  every(5.minutes) do
-    scriptcmd("delayed_job", :ignore_output => true, :opts => "start",
-              :rvm => rvm_ruby_version)
-  end
-
-when "app2.spawn.vc"
-  every(1.day, :at => "8:35 am") do
-    myrake "send:benedikt:an:email", :bundle => true, :rvm => rvm_ruby_version
-  end
+  $stderr.puts "Nothing to do for crontab"
 
 ##
 ## production backup crontabs
