@@ -108,7 +108,12 @@ class Project < ActiveRecord::Base
     end
   end
 
+  def last_complete_build
+    builds.reverse.find { |build| build.finished? }
+  end
+
   private
+
   def build_dir_from_name(name)
     if BigTuna.build_dir[0] == '/'[0]
       File.join(BigTuna.build_dir, name.downcase.gsub(/[^A-Za-z0-9]/, "_"))
