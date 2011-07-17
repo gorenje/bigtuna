@@ -63,3 +63,9 @@ p                              { margin: 20px 0; }
 form button                    { border: 0; }
 
 #ajax-reload                   { display:none; }
+
+pre .sbinfo { color: #E3F; }
+pre .sberror { color: red; }
+pre .sbaction { color: yellow; }
+pre .sbwarning { color: orange; }
+pre .sbwtf { color: red; text-decoration: blink; }

@@ -1,0 +1,197 @@
+#!/usr/bin/ruby
+# -*- ruby -*-
+require 'erb'
+require 'yaml'
+require 'fileutils'
+require 'md5'
+require 'optparse'
+
+CiHomePath = "/var/app/bigtuna"
+SharedPath = "#{CiHomePath}/shared"
+BigtunaTmp = "#{SharedPath}/bigtunatmp"
+SgluePath  = "#{CiHomePath}/superglue.bigtuna/config/bigtuna/production"
+MyCnfFile  = "#{SgluePath}/my.cnf"
+DbYmlTempl = "#{SgluePath}/database.yml.template.erb"
+DbYmlTemplSqlite = "#{SgluePath}/database.yml.template.sqlite.erb"
+MvToTmpfs  = ["log", "tmp"]
+
+@on_error_exit_value = 1
+@mysql_driver        = "mysql2"
+@use_sqlite          = false
+@symlink_sample_ymls = true
+@testing_gem         = false
+
+opts = OptionParser.new do |o|
+  o.program_name = 'setup_build'
+  o.separator 'Options:'
+  o.on('--fake-negative', nil, 'Exit immediately with exit status 1') { exit 1 }
+  o.on('--fake-positive', nil, 'Always exit with 0') { @on_error_exit_value = 0 }
+  o.on('--use-mysql-two', nil, '(DEFAULT) use mysql2') { @mysql_driver = "mysql2" }
+  o.on('--use-mysql-one', nil, 'use mysql1') { @mysql_driver = "mysql" }
+  o.on('--use-sqlite', nil, 'Use sqlite instead of mysql') { @use_sqlite = true }
+  o.on('--no-sample-ymls', nil, 'NO symlink sample ymls') { @symlink_sample_ymls = false }
+  o.on('--test-gem', nil, 'Testing a gem - no database.yml & co') { @testing_gem = true }
+
+  o.on_tail('--help', '-h', 'Show this message') do
+    puts " -- error running setup build"
+    puts opts
+    exit 1
+  end
+end
+opts.parse!(ARGV)
+
+puts " == Currently in: #{Dir.pwd}"
+@build_path = ARGV[0] || Dir.pwd
+
+def cleanup
+  # ok, so that we can build again, remove the ln'ed directories (svn has issues ...)
+  MvToTmpfs.each { |tmp_dir| `rm -fr #{File.join(FileUtils.pwd, tmp_dir)}` }
+end
+
+at_exit { cleanup }
+
+def database_exists?(config)
+  ["test", "development","production"].collect do |e|
+    config[e]
+  end.collect do |e|
+    u,p,d = e['username'], e['password'].gsub(/[$]/,'\$'), e['database']
+    system("mysql --defaults-file=#{MyCnfFile} #{d} -e \"show tables;\" 2>/dev/null 1>&2")
+  end.inject(true) do |t,v|
+    t && v
+  end
+end
+
+def create_database_and_permissions
+  config = YAML.load(open(File.join('config', 'database.yml')))
+  unless config
+    puts(" -- FAILED: unable to read config/database.yml -- this usually happens during "+
+         "the initial build -- try again and if you see this message again, then "+
+         "it's a problem")
+    exit @on_error_exit_value
+  end
+
+  # check for the existence of the database
+  unless database_exists?(config)
+    cmds = ["test","development","production"].collect do |e|
+      ["drop","create"].collect do |cmd|
+        "mysqladmin --defaults-file=#{MyCnfFile} #{cmd} #{config[e]['database']} --force=TRUE -s -f" + (cmd == "drop" ? " || echo" : "")
+      end
+    end
+
+    cmds += ["test","development","production"].collect do |e|
+      <<-EOF
+        mysql --defaults-file=#{MyCnfFile} -e "GRANT ALL PRIVILEGES ON #{config[e]['database']}.* TO '#{config[e]['username']}'@'localhost' IDENTIFIED BY '#{config[e]['password']}'"
+      EOF
+    end
+
+    cmds.flatten.each do |cmd|
+      unless system(cmd)
+        puts " -- FAILED: #{cmd.gsub(/--password=[^ ]+/,"--password=''")}"
+        exit @on_error_exit_value
+      end
+    end
+  end
+end
+
+def regenerate_database_yml(project_name)
+  dbf, b = File.join(SharedPath, 'database.yml.d',
+                     "database.yml-#{project_name}"), binding
+  `rm -fr config/database.yml #{dbf}`
+
+  project_prefix = project_name.downcase.gsub(/-/,"_")
+  eval("project_prefix = \"#{project_prefix}\"", b)
+  puts " ** Preparing DB w/ prefix/user: #{project_prefix}"
+
+  (File.open(dbf,"w") << if @use_sqlite
+                           dbname = "#{BigtunaTmp}/#{project_prefix}.sqlite"
+                           `rm -fr #{dbname} && touch #{dbname}`
+                           puts(" !! created sqlite db: #{dbname}")
+                           eval("sqlite_version = 'sqlite3'", b)
+                           ERB.new(File.open(DbYmlTemplSqlite,"r").read)
+                         else
+                           puts(" !! using mysql adapter: #{@mysql_driver}")
+                           eval("password = '#{Digest::MD5.hexdigest(project_name)}'", b)
+                           eval("mysql_version = '#{@mysql_driver}'", b)
+                           ERB.new(File.open(DbYmlTempl,"r").read)
+                         end.result(b)).close
+  `ln -s #{dbf} config/database.yml`
+end
+
+def check_for_log_and_tmp
+  ["tmp", "log"].each do |dirname|
+    FileUtils.mkdir(dirname) unless File.exists?(dirname)
+  end
+end
+
+def link_tmpfs_into_project(project_name)
+  # relative to "work"
+  return unless File.exists?(BigtunaTmp)
+  MvToTmpfs.each do |tmp_dir|
+    mem_tmp_dir, full_path = [File.join(BigtunaTmp, project_name, tmp_dir),
+                              File.join(FileUtils.pwd, tmp_dir)]
+    `rm -fr #{full_path} #{mem_tmp_dir}`
+    FileUtils.mkdir_p(mem_tmp_dir)
+    begin
+      FileUtils.ln_s(mem_tmp_dir, full_path)
+    rescue Exception => e ; end
+  end
+end
+
+def link_sample_config_yamls
+  Dir['config/*.yml.sample'].select { |a| a !~ /database.yml/ }.each do |sample_name|
+    puts(" !! link sample yml: #{sample_name} to #{sample_name.gsub(/[.]sample/,'')}")
+    `rm -fr #{sample_name.gsub(/[.]sample/,'')}`
+    `ln -s ../#{sample_name} #{sample_name.gsub(/[.]sample/,'')}`
+  end
+end
+
+def install_ruby_rvm_bundler
+  req_ruby_version, req_gemset = @rvm_stanza.split("@")
+
+  puts " !! Installing #{req_ruby_version}"
+  puts " !! Gemset: #{req_gemset}"
+
+  # install the required version of ruby
+  system("if ! rvm list rubies | grep #{req_ruby_version} 2>/dev/null >&2 ; "+
+         "then rvm install #{req_ruby_version} ; fi")
+
+  # this ensures that the gentoo declare -x RUBYOPT="-rauto_gem" is ignored.
+  `touch #{CiHomePath}/.rvm/rubies/#{req_ruby_version}/lib/ruby/site_ruby/auto_gem.rb`
+
+  system("rvm #{@rvm_stanza} exec gem install bundler")
+  bundle_flags = @testing_gem ? "" : "--deployment"
+  system("rvm #{@rvm_stanza} exec bundle install #{bundle_flags} --path=#{Dir.pwd}/.bundle")
+end
+
+# This script gets executed in the work directory of a project
+# This means that the project name is one directory above us.
+# Also we generate a MD5 hash of the project name and use that for the database
+# configuration. Avoid using the directory name because of MySQL max. user name
+# length issues. Also we ensure that the the hash begins with a letter and
+# also is only 10 characters in length.
+project_name =
+  Digest::MD5.hexdigest(Dir.pwd.split(File::SEPARATOR)[-2]).match(/[a-f].{9}/)[0]
+
+puts " !! CD'ing to: #{@build_path}"
+Dir.chdir(@build_path)
+
+@rvm_stanza = File.read(".rvmrc").gsub(/.*rvm use --create /,'').strip
+puts " == Rvm Stanza: '#{@rvm_stanza}'"
+install_ruby_rvm_bundler
+
+(if @testing_gem
+   []
+ else
+   regenerate_database_yml(project_name)
+   create_database_and_permissions unless @use_sqlite
+   check_for_log_and_tmp
+   link_tmpfs_into_project(project_name)
+   link_sample_config_yamls if @symlink_sample_ymls
+   ["db:drop", "db:create", "db:test:purge", "db:migrate --trace"]
+ end + ["test --trace"]).inject(true) do |t, cmd|
+  cmdstr = "rvm #{@rvm_stanza} exec bundle exec rake #{cmd}"
+  puts " == preparing to do: #{cmdstr}"
+  t = t && system(cmdstr)
+  exit @on_error_exit_value unless t # exit immediately if something should go wrong
+  t
+end
