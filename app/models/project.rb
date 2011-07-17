@@ -45,7 +45,7 @@ class Project < ActiveRecord::Base
       build = self.builds.create!({:scheduled_at => Time.now, :build_no => new_total_builds})
       self.update_attributes!(:total_builds => new_total_builds)
       remove_project_jobs_in_queue()
-      Delayed::Job.enqueue(build)
+      Delayed::Job.enqueue(build, :priority => self.id % 10)
     end
   end
 
