@@ -10,13 +10,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110326142448) do
+ActiveRecord::Schema.define(:version => 20110715070800) do
 
   create_table "build_parts", :force => true do |t|
-    t.integer  "build_id",         :null => false
+    t.integer  "build_id",                               :null => false
     t.string   "name"
     t.text     "steps"
-    t.text     "output"
+    t.text     "output",           :limit => 2147483647
     t.string   "status"
     t.datetime "started_at"
     t.datetime "finished_at"
@@ -29,7 +29,7 @@ ActiveRecord::Schema.define(:version => 20110326142448) do
     t.integer  "project_id"
     t.string   "commit"
     t.string   "status"
-    t.text     "output"
+    t.text     "output",         :limit => 2147483647
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "build_dir"
