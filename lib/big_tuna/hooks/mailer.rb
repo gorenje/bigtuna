@@ -19,12 +19,12 @@ module BigTuna
 
     class Sender < ActionMailer::Base
       self.append_view_path("lib/big_tuna/hooks")
-      default :from => "info@ci.appelier.com"
+      default :from => "BigTuna <bigtuna@ci.spawn.vc>"
 
       def build_failed(build, recipients)
         @build = build
         @project = @build.project
-        mail(:to => recipients, :subject => "Build '#{@build.display_name}' in '#{@project.name}' failed") do |format|
+        mail(:to => recipients, :subject => "[BigTuna] Build '#{@build.display_name}' in '#{@project.name}' failed") do |format|
           format.text { render "mailer/build_failed" }
         end
       end
@@ -32,7 +32,7 @@ module BigTuna
       def build_still_fails(build, recipients)
         @build = build
         @project = @build.project
-        mail(:to => recipients, :subject => "Build '#{@build.display_name}' in '#{@project.name}' still fails") do |format|
+        mail(:to => recipients, :subject => "[BigTuna] Build '#{@build.display_name}' in '#{@project.name}' still fails") do |format|
           format.text { render "mailer/build_still_fails" }
         end
       end
@@ -40,7 +40,7 @@ module BigTuna
       def build_fixed(build, recipients)
         @build = build
         @project = @build.project
-        mail(:to => recipients, :subject => "Build '#{@build.display_name}' in '#{@project.name}' fixed") do |format|
+        mail(:to => recipients, :subject => "[BigTuna] Build '#{@build.display_name}' in '#{@project.name}' fixed") do |format|
           format.text { render "mailer/build_fixed" }
         end
       end
