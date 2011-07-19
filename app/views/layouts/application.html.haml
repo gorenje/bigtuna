@@ -11,9 +11,12 @@
     %meta{:name => "description", :content => "description"}
   %body
     #main
+      %div#ad1
+        = link_to("Goto BigTuna", "http://bigtuna.appelier.com", :target => "_blank", :title => "BigTuna v#{BigTuna::VERSION}")
       %div#ad
-        checked with
-        = link_to("BigTuna", "http://bigtuna.appelier.com", :target => "_blank", :title => "BigTuna v#{BigTuna::VERSION}")
+        = link_to("New Project", new_project_path)
+      %div#ad
+        = link_to("Home", root_path)
       #content
         = flash[:error]
         = flash[:notice]

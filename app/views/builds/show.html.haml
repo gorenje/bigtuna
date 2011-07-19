@@ -2,7 +2,7 @@
   = render :partial => 'build'
 
 = ajaxReload(build_path(@build, :format => :js))
-  
+
 - content_for :sidebar do
   - if params[:stderr].nil?
     %li= link_to("Show stderr", build_path(@build, :stderr => 1), :class => "black_button")
@@ -11,4 +11,5 @@
   %li= link_to("All builds", project_path(@build.project), :class => "black_button")
   - unless BigTuna.read_only?
     %li= link_to("Build now", build_project_path(@build.project), :class => "black_button")
+    %li= link_to("Edit Project", edit_project_path(@build.project), :class => "black_button")
   %li= link_to("Feed", feed_project_path(@build.project)+".atom", :class => "rss")
