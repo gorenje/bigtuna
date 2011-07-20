@@ -25,6 +25,8 @@ namespace :deploy do
     "setup_paths"      => ["generate_remote_files", "crontab:create"], #, "monit:reload"],
     "rvm:install_ruby" => "bundler:install",
     "symlink"          => "crontab:install",
+    "stop"             => "delayed_job:stop",
+    "start"            => "delayed_job:start",
   }.each do |after_task, before_tasks|
     [before_tasks].flatten.each do |before_task|
       after "deploy:#{after_task}", "deploy:#{before_task}"
