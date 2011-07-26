@@ -70,3 +70,7 @@ pre .sberror { color: red; }
 pre .sbaction { color: yellow; }
 pre .sbwarning { color: orange; }
 pre .sbwtf { color: red; text-decoration: blink; }
+
+pre .pnfilelink { color: orange; }
+pre .pnlinenum { color: white; }
+pre .pnrevlink { color: yellow; }

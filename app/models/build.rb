@@ -107,9 +107,13 @@ class Build < ActiveRecord::Base
     self.project.step_lists.each do |step_list|
       replacements = {}
       step_list.shared_variables.all.each { |var| replacements[var.name] = var.value }
-      replacements["build_dir"] = self.build_dir
-      replacements["project_dir"] = self.project.build_dir
-      replacements["setup_build"] = File.join(Rails.root, "script", "setup_build")
+
+      replacements["build_dir"]     = self.build_dir
+      replacements["project_dir"]   = self.project.build_dir
+      replacements["setup_build"]   = File.join(Rails.root, "script", "setup_build")
+      replacements["project_notes"] = File.join(Rails.root, "script", "project_notes")
+      replacements["hook_name"]     = self.project.hook_name
+
       attrs = {
         :name => step_list.name,
         :steps => step_list.steps,
