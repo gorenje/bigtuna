@@ -9,9 +9,13 @@
     %tt.command= "Exit code: #{step.exit_code}"
   - if !step.exit_code.nil? and step.has_output?
     %pre
+      - test_totals = [0,0,0,0]
       - step.all.each do |type, text|
         - if (type != BigTuna::Runner::Output::TYPE_STDERR or params[:stderr])
           - txt_line = strip_shell_colorization(text)
+          - test_totals = match_test_summary_line(txt_line, test_totals)
           - txt_line = txt_line[1..-1].html_safe if txt_line[0] == ?!
           %span{:class => "#{type} #{css_class_for_line(txt_line)}"}= txt_line
+      - if test_totals.first > 0
+        %span{:class => "stdout sbwtf"}= " == Test totals: %d tests, %d assertions, %d failures, %d errors" % test_totals
 %br
