@@ -15,6 +15,32 @@ module BigTuna
     # Custom directories with classes and modules you want to be autoloadable.
     config.autoload_paths += %W(#{config.root}/lib)
 
+    # http authentication if the htpasswd is available. If you only want this is in production
+    # then move the code out to the environments/production.rb, see
+    #    http://stackoverflow.com/questions/3588951/warden-vs-rackauthbasic-doing-http-basic-auth-in-ruby-framework
+    # for details.
+    htpwdfile = File.join(Rails.root, 'config', 'htpasswd')
+    if File.exists?(htpwdfile)
+      puts " !!! Found htpasswd, will activate basic authentication"
+      realm, cashname = "Yummy Fish", "_http_auth_passwd_"
+
+      # read the htpasswd file here so that in case there is an issue, we crash on
+      # start of the application and not on the first request.
+      htpasswdlookup = Hash[File.read(htpwdfile).split.map { |a| a.split(/:/) }]
+
+      # we store the htpasswdlookup in the rails cache so that we can manipulate it
+      # at runtime and don't have to restart the application. Of course, we can only
+      # add people to the htpasswd at runtime but we can't deactivate HTTP Authentication -
+      # this will require a restart.
+      config.middleware.
+        insert_after(::Rack::Lock, "::Rack::Auth::Basic", realm) do |u, p|
+        Rails.cache.write(cashname,htpasswdlookup) if Rails.cache.read(cashname).nil?
+        encpass = Rails.cache.read(cashname)[u.to_s]
+        # Assume we're using basic crypt encryption for our passwords
+        encpass && encpass == p.crypt(encpass[0..1])
+      end
+    end
+
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
     # config.plugins = [ :exception_notification, :ssl_requirement, :all ]
