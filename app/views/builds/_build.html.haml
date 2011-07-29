@@ -8,11 +8,11 @@
     %td.value= strip_rails_root(@build.build_dir)
   %tr
     %td.title Scheduled at
-    %td.value= l(@build.scheduled_at, :format => :full)
+    %td.value= l(@build.scheduled_at.getlocal, :format => :full)
   - if @build.started?
     %tr
       %td.title Started at
-      %td.value= l(@build.started_at, :format => :full)
+      %td.value= l(@build.started_at.getlocal, :format => :full)
   - if @build.finished?
     %tr
       %td.title Duration

@@ -4,7 +4,7 @@
 %tr
   %td.title Committed&nbsp;at
   %td.value
-    = build.commit_data? ? l(build.committed_at, :format => :long) : "Commit date not yet available"
+    = build.commit_data? ? l(build.committed_at.getlocal, :format => :long) : "Commit date not yet available"
     = build.commit_data? ? (" by " + mail_to(build.email, build.author)).html_safe : "Author not yet available"
 %tr
   %td.title Message
