@@ -11,7 +11,19 @@ class ProjectsController < ApplicationController
   end
 
   def show
-    @builds = @project.builds.order("created_at DESC").limit(@project.max_builds).includes(:project, :parts).all
+    respond_to do |format|
+      format.png do
+        send_data(File.read(File.join(Rails.root, "public", "images",
+                                      build_image_for(@project.last_complete_build))),
+                  :type => 'image/png', :disposition => 'inline')
+      end
+
+      format.all do
+        @builds = @project.builds.order("created_at DESC").
+          limit(@project.max_builds).includes(:project, :parts).all
+        render
+      end
+    end
   end
 
   def feed
@@ -68,7 +80,16 @@ class ProjectsController < ApplicationController
   end
 
   private
+
   def locate_project
     @project = Project.find(params[:id])
+  end
+
+  def build_image_for(build)
+    case build.status.to_s
+    when Build::STATUS_OK     then 'stable.png'
+    when Build::STATUS_FAILED then 'unstable.png'
+    else 'unknown.png'
+    end
   end
 end
