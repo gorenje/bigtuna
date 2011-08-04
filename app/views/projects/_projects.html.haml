@@ -12,9 +12,13 @@
         %h3.center= project.name
       - else
         %h3= link_to(project.name, project_path(project))
-      - if project.recent_build
+      - if build = project.recent_build
         %table.value_list
-          = render :partial => "builds/build_data", :locals => {:build => project.recent_build}
+          = render :partial => "builds/build_data", :locals => {:build => build}
+          - if build.finished?
+            %tr
+              %td.title Duration
+              %td.value= build_duration(build)
           %tr
             %td.title Stability
             %td.value= format_stability(project.stability)
