@@ -43,6 +43,15 @@ class ProjectsController < ApplicationController
 
   def new
     @project = Project.new
+    {
+      :n => :name,
+      :r => :vcs_source,
+      :b => :vcs_branch,
+      :m => :max_builds,
+      :h => :hook_name
+    }.each do |key, method_name|
+      @project.send("#{method_name}=", params[key]) if params[key]
+    end
   end
 
   def create
