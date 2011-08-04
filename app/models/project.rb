@@ -112,6 +112,10 @@ class Project < ActiveRecord::Base
     builds.reverse.find { |build| build.finished? }
   end
 
+  def is_spacer?
+    name =~ /^==/
+  end
+
   private
 
   def build_dir_from_name(name)

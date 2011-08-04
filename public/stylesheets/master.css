@@ -74,3 +74,5 @@ pre .sbwtf { color: red; text-decoration: blink; }
 pre .pnfilelink { color: orange; }
 pre .pnlinenum { color: white; }
 pre .pnrevlink { color: yellow; }
+
+h3.center { color: blue; text-align: center;}
