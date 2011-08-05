@@ -75,7 +75,7 @@ class ProjectsController < ApplicationController
   end
 
   def destroy
-    @project.destroy
+    @project.delay(:priority => @project.id % 10).destroy
     redirect_to projects_path
   end
 
