@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110715070800) do
+ActiveRecord::Schema.define(:version => 20110806114603) do
 
   create_table "build_parts", :force => true do |t|
     t.integer  "build_id",                               :null => false
@@ -80,6 +80,7 @@ ActiveRecord::Schema.define(:version => 20110715070800) do
     t.integer  "total_builds"
     t.integer  "failed_builds"
     t.string   "fetch_type",    :default => "clone"
+    t.datetime "deleted_at"
   end
 
   create_table "shared_variables", :force => true do |t|

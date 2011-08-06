@@ -17,6 +17,7 @@ class Project < ActiveRecord::Base
 
   validate :validate_vcs_incremental_support
 
+  scope :not_pending_deletion, where("deleted_at is null")
   acts_as_list
 
   def self.ajax_reload?
@@ -126,16 +127,12 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def really_remove_build_folder
+  def remove_build_folder
     if File.directory?(self.build_dir)
       FileUtils.rm_rf(self.build_dir)
     else
       Rails.logger.debug("[BigTuna] Couldn't find build dir: %p" % [self.build_dir])
     end
-  end
-
-  def remove_build_folder
-    self.delay(:priority => self.id % 10).really_remove_build_folder
   end
 
   def rename_build_folder

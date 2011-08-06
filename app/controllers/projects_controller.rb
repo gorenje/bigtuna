@@ -3,7 +3,7 @@ class ProjectsController < ApplicationController
   respond_to :js, :only => [:index, :show]
 
   def index
-    @projects = Project.order("position ASC")
+    @projects = Project.not_pending_deletion.order("position ASC")
     respond_to do |format|
       format.cctray { render :action => 'index_cctray', :layout => false }
       format.all { render }
@@ -75,7 +75,8 @@ class ProjectsController < ApplicationController
   end
 
   def destroy
-    @project.delay(:priority => @project.id % 10).destroy
+    @project.update_attribute(:deleted_at, Time.now)
+    @project.delay(:priority => 10).destroy
     redirect_to projects_path
   end
 
