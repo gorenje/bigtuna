@@ -39,7 +39,7 @@ class Build < ActiveRecord::Base
   end
 
   def display_name
-    "Build ##{self.build_no} @ #{I18n.l(self.scheduled_at, :format => :long)}"
+    "Build ##{self.build_no} @ #{I18n.l(self.scheduled_at.getlocal, :format => :long)}"
   end
 
   def to_param
