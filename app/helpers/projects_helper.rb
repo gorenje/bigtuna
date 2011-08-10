@@ -17,7 +17,7 @@ module ProjectsHelper
   # by CCTray.Net
   def map_to_cctray_project_activity(builder_state)
     case builder_state.to_s
-    when Build::STATUS_IN_QUEUE then 'CheckingModifications'
+    when Build::STATUS_IN_QUEUE then 'Building'
     when Build::STATUS_PROGRESS then 'Building'
     when Build::STATUS_OK then 'Sleeping'
     else 'Unknown'
