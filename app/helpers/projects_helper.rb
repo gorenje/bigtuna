@@ -23,4 +23,12 @@ module ProjectsHelper
     else 'Unknown'
     end
   end
+
+  def list_of_git_branches(project)
+    options_for_select(`git ls-remote #{project.vcs_source}`.split.
+      select { |a| a =~ /refs\/heads/ }.
+                       collect { |a| a.gsub( /refs\/heads\//, '') }.
+                       sort_by { |a| a =~ /issue_([0-9]+)/ ? $1.to_i : 0 },
+                       project.vcs_branch)
+  end
 end

@@ -14,6 +14,7 @@
   = f.label(:vcs_branch)
   %br
   = f.text_field(:vcs_branch, :class => 'textfield')
+  = select_tag(:branches, list_of_git_branches(f.object), :onchange => 'set_branch_name(this);') if f.object.vcs_type == "git"
 %div
   = f.label(:fetch_type)
   %br
@@ -47,3 +48,7 @@
   %button.black_button{:type => "submit"}
     = f.object.new_record? ? "Create" : "Update"
   = link_to("Back to project", project_path(f.object), :class => "black_button") unless f.object.new_record?
+:javascript
+  function set_branch_name(select_box) {
+    $('#project_vcs_branch').val( select_box.value );
+  }
