@@ -1,7 +1,7 @@
 # -*- ruby -*-
 source 'http://rubygems.org'
 
-gem "rails", "3.0.3"
+gem "rails", "3.0.10"
 gem "sqlite3-ruby"
 gem "haml"
 gem 'daemon-spawn', :git => 'https://github.com/alexvollmer/daemon-spawn.git', :require => 'daemon_spawn'
