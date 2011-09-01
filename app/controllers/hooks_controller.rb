@@ -4,7 +4,12 @@ class HooksController < ApplicationController
   def autobuild
     project = Project.where(:hook_name => params[:hook_name]).first
     if project
-      trigger_and_respond(project)
+      if project.vcs_branch == params[:branch]
+        trigger_and_respond(project)
+      else
+        render(:text => "branch name %p not found on %p" % [params[:branch], project.name],
+               :status => 404)
+      end
     else
       render :text => "hook name %p not found" % [params[:hook_name]], :status => 404
     end
